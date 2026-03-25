@@ -1,15 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace chiffrement
+namespace Chiffrement
 {
     internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
+            string texte = "Hello World";
+            string cle = "cipher";
+
+            string texteChiffre = Playfair.Chiffrer(texte, cle);
+            string texteDechiffre = Playfair.Dechiffrer(texteChiffre, cle);
+
+            Console.WriteLine("Texte clair    : " + texte);
+            Console.WriteLine("Texte chiffré  : " + texteChiffre);
+            Console.WriteLine("Texte déchiffré: " + texteDechiffre);
+
+            Console.ReadKey();
         }
     }
 }
