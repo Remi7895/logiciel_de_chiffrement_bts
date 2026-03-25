@@ -8,49 +8,50 @@ namespace Chiffrement
     {
 
         #region ATTRIBUTS
+
         private const char LettreDeRemplissage = 'X';
-        private const string Alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"; // J fusionné avec I
+        private const string Alphabet = "ABCDEFGHIKLMNOPQRSTUVWXYZ"; // J fusionné avec I car la matrice playfair utilie 25 (5*5) cases et que l'alphabet comporte 26 lettres.
+
         #endregion
-            
+
         #region METHODES PUBLIQUES  
-        public static string Chiffrer(string texte, string cle)
+        public static string Chiffrer(string texte, string cle) // Chiffrer un texte.
         {
             return Traiter(texte, cle, chiffrement: true);
         }
 
-        public static string Dechiffrer(string texte, string cle)
+        public static string Dechiffrer(string texte, string cle) // Déchiffirer un texte.
         {
             return Traiter(texte, cle, chiffrement: false);
         }
         #endregion
 
         #region METHODES PRIVEES
-        private static string Traiter(string message, string cle, bool chiffrement)
+        private static string Traiter(string message, string cle, bool chiffrement) // Méthode principale qui applique l'algorithme Playfair (chiffrement ou déchiffrement)
         {
-            if (message == null)
+            if (message == null) // Empêche un crash de l'application si le message est null.
                 throw new ArgumentNullException(nameof(message));
 
-            char[,] grille = GenererGrille(cle);
-            string messageNettoye = NettoyerMessage(message);
+            char[,] grille = GenererGrille(cle); // Génère la grille Playfair (5*5) à partir de la clé
+            string messageNettoye = NettoyerMessage(message); // Nettoie le message (format Playfair : majuscules, suppression des caractères non valides).
 
-            if (messageNettoye.Length % 2 != 0)
+            if (messageNettoye.Length % 2 != 0)  // Ajoute une lettre de remplissage si le message contient un nombre impair de caractères.
                 messageNettoye += LettreDeRemplissage;
 
-            StringBuilder resultat = new StringBuilder(messageNettoye.Length);
+            StringBuilder resultat = new StringBuilder(messageNettoye.Length); // Initialise le résultat avec une capacité optimisée
 
-            for (int i = 0; i < messageNettoye.Length; i += 2)
+            for (int i = 0; i < messageNettoye.Length; i += 2) // Parcourt le message deux lettres par deux lettres (digrammes)
             {
                 char c1 = messageNettoye[i];
                 char c2 = messageNettoye[i + 1];
 
                 TrouverPosition(grille, c1, out int ligne1, out int colonne1);
-                TrouverPosition(grille, c2, out int ligne2, out int colonne2);
+                TrouverPosition(grille, c2, out int ligne2, out int colonne2); // Trouve la position des deux lettres dans la grille
 
-                int decalage = chiffrement ? 1 : -1;
+                int decalage = chiffrement ? 1 : -1; // Définit le sens du décalage (droite/bas pour chiffrer, gauche/haut pour déchiffrer)
 
                 if (ligne1 == ligne2 && colonne1 == colonne2)
                 {
-                    // Cas particulier demandé par le sujet : deux lettres identiques
                     char remplacement = grille[TesterDepassement(ligne1 + decalage, grille),
                                               TesterDepassement(colonne1 + decalage, grille)];
                     resultat.Append(remplacement);
@@ -71,12 +72,12 @@ namespace Chiffrement
                     resultat.Append(grille[ligne1, colonne2]);
                     resultat.Append(grille[ligne2, colonne1]);
                 }
-            }
-
-            return RetoucherChaine(message, resultat.ToString());
+            } 
+             
+            return RetoucherChaine(message, resultat.ToString()); // Ajuste le résultat pour correspondre au format du message d'origine
         }
 
-        private static char[,] GenererGrille(string cle)
+        private static char[,] GenererGrille(string cle) // Génère la grille Playfair 5x5 à partir de la clé fournie
         {
             string cleNormalisee = string.IsNullOrWhiteSpace(cle) ? "CIPHER" : cle;
             cleNormalisee = cleNormalisee.ToUpperInvariant().Replace('J', 'I');
@@ -96,7 +97,7 @@ namespace Chiffrement
             return grille;
         }
 
-        private static string SupprimerDoublons(string valeur)
+        private static string SupprimerDoublons(string valeur) // Supprime les caractères en double tout en conservant l'ordre d'apparition
         {
             HashSet<char> dejaVus = new HashSet<char>();
             StringBuilder resultat = new StringBuilder(valeur.Length);
@@ -110,7 +111,7 @@ namespace Chiffrement
             return resultat.ToString();
         }
 
-        private static string NettoyerMessage(string message)
+        private static string NettoyerMessage(string message) // Nettoie le message pour le rendre compatible avec Playfair
         {
             StringBuilder resultat = new StringBuilder(message.Length);
 
@@ -129,7 +130,7 @@ namespace Chiffrement
             return resultat.ToString();
         }
 
-        private static void TrouverPosition(char[,] grille, char c, out int ligne, out int colonne)
+        private static void TrouverPosition(char[,] grille, char c, out int ligne, out int colonne) // Recherche la position (ligne, colonne) d'une lettre dans la grille
         {
             for (int i = 0; i < 5; i++)
             {
@@ -147,7 +148,7 @@ namespace Chiffrement
             throw new ArgumentException($"Caractère introuvable dans la grille : {c}", nameof(c));
         }
 
-        private static int TesterDepassement(int rang, char[,] grille)
+        private static int TesterDepassement(int rang, char[,] grille) // Gère les dépassements de la grille (effet circulaire)
         {
             if (rang == grille.GetLength(0))
                 return 0;
@@ -158,7 +159,7 @@ namespace Chiffrement
             return rang;
         }
 
-        private static string RetoucherChaine(string input, string output)
+        private static string RetoucherChaine(string input, string output) // Réintègre la mise en forme d'origine (espaces, minuscules, ponctuation)
         {
             StringBuilder resultat = new StringBuilder(output);
             int indexLettres = 0;
